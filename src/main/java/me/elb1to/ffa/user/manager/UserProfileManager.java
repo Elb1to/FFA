@@ -8,7 +8,9 @@ import me.elb1to.ffa.user.UserProfile;
 import org.bson.Document;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserProfileManager {
 
 	private final FfaPlugin plugin;
+	private final Set<UUID> builders = new HashSet<>();
 	private final Map<UUID, UserProfile> users = new ConcurrentHashMap<>();
 
 	public void load(UserProfile user) {
@@ -77,5 +80,9 @@ public class UserProfileManager {
 
 	public Collection<UserProfile> getAllProfiles() {
 		return users.values();
+	}
+
+	public Set<UUID> getBuilders() {
+		return builders;
 	}
 }
