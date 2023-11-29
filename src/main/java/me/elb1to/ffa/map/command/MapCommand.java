@@ -29,10 +29,31 @@ public class MapCommand extends BaseCommand {
 		player.sendMessage(" ");
 		player.sendMessage(CC.color("&b&lMap Commands &8- &7Information"));
 		player.sendMessage(CC.color("&3 ● &b/map list &8- &7List all existing maps"));
+		player.sendMessage(CC.color("&3 ● &b/map debug <name> &8- &7Debug a map"));
 		player.sendMessage(CC.color("&3 ● &b/map create <name> &8- &7Create a new map"));
 		player.sendMessage(CC.color("&3 ● &b/map delete <name> &8- &7Delete an existing map"));
 		player.sendMessage(CC.color("&3 ● &b/map teleport <name> &8- &7Teleport to the map"));
+		player.sendMessage(CC.color("&3 ● &b/map nofall <name> &8- &7Disable fall damage in the map"));
 		player.sendMessage(CC.color("&3 ● &b/map setlocation <name> <spawn|min|max> &8- &7Set the location of the map"));
+		player.sendMessage(CC.color("&3 ● &b/map slot <name> <number> &8- &7Set the slot of the map in the map selection menu"));
+		player.sendMessage(" ");
+	}
+
+	@Subcommand("debug")
+	@CommandCompletion("@maps")
+	public void debug(Player player, FfaMap ffaMap) {
+		if (!plugin.getMapManager().exists(ffaMap.getName())) {
+			player.sendMessage(CC.color("&cA map with that name does not exist."));
+			return;
+		}
+
+		player.sendMessage(" ");
+		player.sendMessage(CC.color("&b&lMap Debug &8- &7Information"));
+		player.sendMessage(CC.color("&3 ● &bName: &f" + ffaMap.getName()));
+		player.sendMessage(CC.color("&3 ● &bType: &f" + ffaMap.getType().name()));
+		player.sendMessage(CC.color("&3 ● &bSpawn: &f" + (ffaMap.getSpawn() == null ? "None" : ffaMap.getSpawn().toString())));
+		player.sendMessage(CC.color("&3 ● &bMin: &f" + (ffaMap.getMin() == null ? "None" : ffaMap.getMin().toString())));
+		player.sendMessage(CC.color("&3 ● &bMax: &f" + (ffaMap.getMax() == null ? "None" : ffaMap.getMax().toString())));
 		player.sendMessage(" ");
 	}
 
@@ -108,5 +129,29 @@ public class MapCommand extends BaseCommand {
 
 		player.teleport(ffaMap.getSpawn().toBukkitLocation());
 		player.sendMessage(CC.color("&aYou have been teleported to the &b" + ffaMap.getName() + " &amap."));
+	}
+
+	@Subcommand("nofall")
+	@CommandCompletion("@maps")
+	public void noFall(Player player, FfaMap ffaMap) {
+		if (!plugin.getMapManager().exists(ffaMap.getName())) {
+			player.sendMessage(CC.color("&cA map with that name does not exist."));
+			return;
+		}
+
+		//ffaMap.setNoFall(!ffaMap.isNoFall());
+		//player.sendMessage(CC.color("&aYou have " + (ffaMap.isNoFall() ? "enabled" : "disabled") + " no fall damage in the &b" + ffaMap.getName() + " &amap."));
+	}
+
+	@Subcommand("slot")
+	@CommandCompletion("@maps")
+	public void setSlot(Player player, FfaMap ffaMap, int slot) {
+		if (!plugin.getMapManager().exists(ffaMap.getName())) {
+			player.sendMessage(CC.color("&cA map with that name does not exist."));
+			return;
+		}
+
+		//ffaMap.setSlot(slot);
+		//player.sendMessage(CC.color("&aYou have set the slot of the &b" + ffaMap.getName() + " &amap to &b" + slot + "&a."));
 	}
 }
