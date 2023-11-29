@@ -2,23 +2,32 @@ package me.elb1to.ffa.game.listener;
 
 import lombok.AllArgsConstructor;
 import me.elb1to.ffa.FfaPlugin;
+import me.elb1to.ffa.game.FfaInstance;
 import me.elb1to.ffa.map.FfaMap;
 import me.elb1to.ffa.user.UserProfile;
+import me.elb1to.ffa.user.ui.ffa.MapSelectionMenu;
+import me.elb1to.ffa.util.PlayerUtil;
 import me.elb1to.ffa.util.chat.CC;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Arrays;
 
 /**
  * @author Elb1to
@@ -29,10 +38,48 @@ public class FfaListener implements Listener {
 
 	private final FfaPlugin plugin;
 
-	/*@EventHandler
+	@EventHandler
 	public void onItemDrop(PlayerDropItemEvent event) {
-		event.setCancelled(!event.getPlayer().isOp());
-	}*/
+		Player player = event.getPlayer();
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile == null || profile.getState() != UserProfile.State.PLAYING || !plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onItemPickup(PlayerPickupItemEvent event) {
+		Player player = event.getPlayer();
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile == null || profile.getState() != UserProfile.State.PLAYING || !plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent event) {
+		Player player = event.getPlayer();
+		if (!plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent event) {
+		Player player = event.getPlayer();
+		if (!plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onInventoryClick(InventoryClickEvent event) {
+		Player player = (Player) event.getWhoClicked();
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile == null || profile.getState() != UserProfile.State.PLAYING || !plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
 
 	@EventHandler
 	public void onPlayerInteractSoup(PlayerInteractEvent event) {
@@ -45,40 +92,33 @@ public class FfaListener implements Listener {
 		}
 	}
 
-	/*@EventHandler
+	@EventHandler
 	public void onPlayerInteraction(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
-		if (profile.getState() == UserProfile.State.SPECTATING) {
+		if (profile.getState() == UserProfile.State.SPAWN) {
 			ItemStack item = event.getItem();
 			if (item != null) {
-				*//*switch (item.getType()) {
+				switch (item.getType()) {
 					case COMPASS:
-						new AlivePlayersMenu(plugin).openMenu(player);
+						new MapSelectionMenu(plugin).openMenu(player);
 						break;
-					case REDSTONE:
-						plugin.getMinigameManager().getCurrentMinigame().removeSpectator(player);
+					case DIODE:
+						player.sendMessage("Coming Soon™");
 						break;
-				}*//*
-			}
-			return;
-		}
-
-		FfaMap ffaMap = profile.getMap();
-		if (ffaMap.denyDamage(player)) {
-			event.setCancelled(true);
-		}
-	}*/
-
-	/*@EventHandler
-	public void onInventoryClick(InventoryClickEvent event) {
-		Player player = (Player) event.getWhoClicked();
-		if (plugin.getMinigameManager().getCurrentMinigame() != null) {
-			if (plugin.getUserManager().getByUuid(player.getUniqueId()).isInMinigame() && plugin.getMinigameManager().getCurrentMinigame() instanceof TerroristTagMinigame) {
-				event.setCancelled(true);
+					case EMERALD:
+						player.sendMessage("Coming Soon™");
+						break;
+					case BOOK:
+						player.sendMessage("Coming Soon™");
+						break;
+					case PAINTING:
+						player.sendMessage("Coming Soon™");
+						break;
+				}
 			}
 		}
-	}*/
+	}
 
 	@EventHandler
 	public void onArrowHit(EntityDamageByEntityEvent event) {
@@ -92,11 +132,6 @@ public class FfaListener implements Listener {
 			Arrow arrow = (Arrow) event.getDamager();
 			if (arrow.getShooter() instanceof Player) {
 				Player shooter = (Player) arrow.getShooter();
-				/*if (victim.getName().equals(shooter.getName())) {
-					event.setCancelled(true);
-					return;
-				}*/
-
 				UserProfile profile = plugin.getUserProfileManager().getByUuid(victim.getUniqueId());
 				FfaMap ffaMap = profile.getMap();
 				if (ffaMap != null && ffaMap.getType() == FfaMap.Type.LOBBY && ffaMap.getCuboid().isIn(victim)) {
@@ -105,7 +140,7 @@ public class FfaListener implements Listener {
 				}
 
 				double health = Math.ceil(victim.getHealth() - event.getFinalDamage()) / 2.0D;
-				if (health > 0.0D) {
+				if (health > 0.0D && !victim.getName().equals(shooter.getName())) {
 					shooter.sendMessage(CC.color("&c" + victim.getName() + "&e is now at &c" + health + "&4❤&e."));
 				}
 			}
@@ -115,15 +150,17 @@ public class FfaListener implements Listener {
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		Player player = (Player) event.getEntity();
-		/*User user = plugin.getUserManager().getByUuid(player.getUniqueId());
-		if (user.isSpectating()) {
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile.getState() != UserProfile.State.PLAYING) {
 			event.setCancelled(true);
 			return;
-		}*/
+		}
 
-		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 		FfaMap ffaMap = profile.getMap();
-		if (ffaMap.denyDamage(player)) {
+		if (ffaMap == null) {
+			return;
+		}
+		if (ffaMap.denyDamageInSafeZone(player)) {
 			event.setCancelled(true);
 		}
 	}
@@ -137,18 +174,18 @@ public class FfaListener implements Listener {
 				return;
 			}
 
-			/*User user = plugin.getUserManager().getByUuid(shooter.getUniqueId());
-			if (user.isSpectating()) {
-				event.setCancelled(true);
-				return;
-			}*/
-
 			Player target = (Player) event.getEntity();
 			if (target == null) {
 				return;
 			}
 
-			handleMinigameDamage(event, target, shooter);
+			UserProfile profile = plugin.getUserProfileManager().getByUuid(target.getUniqueId());
+			if (profile.getState() != UserProfile.State.PLAYING) {
+				event.setCancelled(true);
+				return;
+			}
+
+			handleDamage(event, target, shooter);
 		}
 
 		if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) {
@@ -161,10 +198,10 @@ public class FfaListener implements Listener {
 			return;
 		}
 
-		handleMinigameDamage(event, victim, attacker);
+		handleDamage(event, victim, attacker);
 	}
 
-	private void handleMinigameDamage(EntityDamageByEntityEvent event, Player victim, Player attacker) {
+	private void handleDamage(EntityDamageByEntityEvent event, Player victim, Player attacker) {
 		UserProfile victimData = plugin.getUserProfileManager().getByUuid(victim.getUniqueId());
 		UserProfile damagerData = plugin.getUserProfileManager().getByUuid(attacker.getUniqueId());
 		if (victimData == null || damagerData == null) {
@@ -176,67 +213,45 @@ public class FfaListener implements Listener {
 			return;
 		}
 
-		FfaMap region = damagerData.getMap();
-		if (region.denyDamage(victim) || region.denyDamage(attacker)) {
-			event.setCancelled(true);
-		} else {
-			attacker.sendMessage("Damaging " + victim.getName() + "!");
-			victim.sendMessage("Damaged by " + attacker.getName() + "!");
-		}
-	}
-
-	/*private void applyCooldown(Player attacker, Player victim, Cancellable event) {
-		FfaMap region = plugin.getMapManager().get("spawn");
+		FfaMap region = victimData.getMap();
 		if (region == null) {
 			return;
 		}
-
-		if (region.denyDamage(victim) || region.denyDamage(attacker)) {
+		if (region.denyDamageInSafeZone(victim) || region.denyDamageInSafeZone(attacker)) {
 			event.setCancelled(true);
-		} else {
-			attacker.sendMessage("Damaging " + victim.getName() + "!");
-			victim.sendMessage("Damaged by " + attacker.getName() + "!");
 		}
-	}*/
+	}
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		event.setDeathMessage(null);
-
-		Player victim = event.getEntity().getPlayer();
-		UserProfile victimUser = plugin.getUserProfileManager().getByUuid(victim.getUniqueId());
 		event.getDrops().clear();
 
+		Player victim = event.getEntity().getPlayer();
 		if (victim.getKiller() != null && victim != victim.getKiller()) {
 			Player killer = event.getEntity().getKiller();
-
-			for (Entity entity : victim.getNearbyEntities(5, 5, 5)) {
-				if (entity instanceof Player) {
-					Player player = (Player) entity;
-					if (player != killer && player != victim) {
-						player.sendMessage(CC.color(plugin.getConfig().getString("messages.played_killed")
-								.replace("<victim>", victim.getName())
-								.replace("<killer>", killer.getName())
-						));
-					}
-				}
-			}
-
-			/*victim.sendMessage(CC.color("&c&l+1 DEATH &4&l｜ &eYou were killed by &c" + killer.getName() + "&f."));
-			killer.sendMessage(CC.color("&a&l+1 KILL &2&l｜ &eYou have killed &a" + victim.getName() + "&f."));*/
-
 			UserProfile killerUser = plugin.getUserProfileManager().getByUuid(killer.getUniqueId());
+			plugin.getFfaManager().updateKillstreak(killer, killerUser.getFfa());
 			killerUser.setKills(killerUser.getKills() + 1);
-			/*killerUser.setCurrentKillstreak(killerUser.getCurrentKillstreak() + 1);
-			killer.getInventory().addItem(new ItemStack(Material.GOLDEN_APPLE, 1));
-			if (killerUser.getCurrentKillstreak() > killerUser.getHighestKillstreak()) {
-				killerUser.setHighestKillstreak(killerUser.getCurrentKillstreak());
-			}*/
+
+			plugin.getFfaManager().broadcast(CC.color(plugin.getConfig().getString("messages.played_killed")
+					.replace("<victim>", victim.getName())
+					.replace("<killer>", killer.getName())
+			));
 		} else {
-			victim.sendMessage(CC.color("&c&l+1 DEATH &4&l｜&eYou have died."));
+			victim.sendMessage(CC.color("&c" + victim.getName() + " has died."));
 		}
 
-		victimUser.setDeaths(victimUser.getDeaths() + 1);
-		// PlayerUtil.clearPlayer(victim);
+		victim.spigot().respawn();
+		PlayerUtil.clearPlayer(victim, false, null);
+		plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+			UserProfile victimUser = plugin.getUserProfileManager().getByUuid(victim.getUniqueId());
+			victim.teleport(victimUser.getMap().getSpawn().toBukkitLocation());
+			victimUser.setDeaths(victimUser.getDeaths() + 1);
+
+			FfaInstance ffa = victimUser.getFfa();
+			ffa.getKit().equip(victim);
+			ffa.getKills().put(victimUser.getUniqueId(), 0);
+		}, 1L);
 	}
 }
