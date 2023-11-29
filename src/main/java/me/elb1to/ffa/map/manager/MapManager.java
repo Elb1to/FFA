@@ -5,6 +5,7 @@ import me.elb1to.ffa.FfaPlugin;
 import me.elb1to.ffa.map.FfaMap;
 import me.elb1to.ffa.util.world.Cuboid;
 import me.elb1to.ffa.util.world.CustomLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
@@ -38,8 +39,7 @@ public class MapManager {
 					ffaMap.setSpawn(CustomLocation.stringToLocation(iMap.getString("spawn")));
 					ffaMap.setMin(CustomLocation.stringToLocation(iMap.getString("min")));
 					ffaMap.setMax(CustomLocation.stringToLocation(iMap.getString("max")));
-
-					ffaMap.setCuboid(new Cuboid(ffaMap.getMin().toBukkitLocation(), ffaMap.getMax().toBukkitLocation()));
+					ffaMap.setWorld(Bukkit.getWorld(ffaMap.getName()));
 
 					maps.add(ffaMap);
 					plugin.getLogger().info("Loaded map " + iMap.getName());

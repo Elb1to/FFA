@@ -3,6 +3,7 @@ package me.elb1to.ffa.map;
 import lombok.Data;
 import me.elb1to.ffa.util.world.Cuboid;
 import me.elb1to.ffa.util.world.CustomLocation;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 /**
@@ -19,6 +20,7 @@ public class FfaMap {
 	private CustomLocation min;
 	private CustomLocation max;
 
+	private World world;
 	private Cuboid cuboid;
 
 	public enum Type {
@@ -29,7 +31,7 @@ public class FfaMap {
 		return this.cuboid.contains(player.getLocation());
 	}
 
-	public boolean denyDamage(Player player) {
+	public boolean denyDamageInSafeZone(Player player) {
 		return this.type == Type.ARENA && has(player);
 	}
 }

@@ -1,6 +1,7 @@
 package me.elb1to.ffa.util.world;
 
 import lombok.Getter;
+import me.elb1to.ffa.map.FfaMap;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ public class Cuboid {
 
 	private final World world;
 
-	public Cuboid(final Location point1, final Location point2) {
+	public Cuboid(Location point1, Location point2) {
 		this.xMin = Math.min(point1.getBlockX(), point2.getBlockX());
 		this.xMax = Math.max(point1.getBlockX(), point2.getBlockX());
 		this.yMin = Math.min(point1.getBlockY(), point2.getBlockY());

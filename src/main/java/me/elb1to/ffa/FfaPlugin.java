@@ -11,12 +11,16 @@ import me.elb1to.ffa.game.task.ItemRemovalTask;
 import me.elb1to.ffa.kit.manager.KitManager;
 import me.elb1to.ffa.layout.ScoreboardLayout;
 import me.elb1to.ffa.leaderboard.manager.LeaderboardManager;
+import me.elb1to.ffa.map.FfaMap;
 import me.elb1to.ffa.map.manager.MapManager;
 import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.user.listener.UserProfileListener;
 import me.elb1to.ffa.user.manager.UserProfileManager;
 import me.elb1to.ffa.util.menu.listener.ButtonListener;
+import me.elb1to.ffa.util.world.Cuboid;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,9 +31,6 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 @Getter
 public class FfaPlugin extends JavaPlugin {
-
-	@Getter
-	private FfaPlugin instance = this;
 
 	private MongoSrv mongoSrv;
 
@@ -44,7 +45,6 @@ public class FfaPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		instance = this;
 		saveDefaultConfig();
 
 		mongoSrv = new MongoSrv(this, getConfig().getConfigurationSection("mongo"));
@@ -56,6 +56,14 @@ public class FfaPlugin extends JavaPlugin {
 		leaderboardManager = new LeaderboardManager(this);
 		userProfileManager = new UserProfileManager(this);
 		commandManager = new CommandManager(this);
+
+		getServer().getScheduler().runTaskLater(this, () -> {
+			for (FfaMap ffaMap : mapManager.getMaps()) {
+				ffaMap.setWorld(Bukkit.getWorld(ffaMap.getName()));
+				Cuboid cuboid = new Cuboid(ffaMap.getMin().toBukkitLocation(), ffaMap.getMax().toBukkitLocation());
+				ffaMap.setCuboid(cuboid);
+			}
+		}, 100L);
 
 		getServer().getPluginManager().registerEvents(new FfaListener(this), this);
 		getServer().getPluginManager().registerEvents(new ButtonListener(this), this);
@@ -76,7 +84,7 @@ public class FfaPlugin extends JavaPlugin {
 			userProfileManager.save(userProfile);
 		}
 
-		for (World world : this.getServer().getWorlds()) {
+		for (World world : Bukkit.getWorlds()) {
 			for (Entity entity : world.getEntities()) {
 				if (!(entity.getType() == EntityType.PAINTING || entity.getType() == EntityType.ITEM_FRAME)) {
 					entity.remove();

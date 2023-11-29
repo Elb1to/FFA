@@ -87,9 +87,9 @@ public class CustomLocation {
 
 	public World toBukkitWorld() {
 		if (this.world == null) {
-			return Bukkit.getServer().getWorlds().get(0);
+			return Bukkit.getWorlds().get(0);
 		} else {
-			return Bukkit.getServer().getWorld(this.world);
+			return Bukkit.getWorld(this.world);
 		}
 	}
 }
