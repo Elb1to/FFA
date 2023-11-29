@@ -9,8 +9,10 @@ import co.aikar.commands.annotation.Subcommand;
 import me.elb1to.ffa.FfaPlugin;
 import me.elb1to.ffa.game.FfaInstance;
 import me.elb1to.ffa.kit.Kit;
+import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.user.ui.ffa.MapSelectionMenu;
 import me.elb1to.ffa.util.chat.CC;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -41,7 +43,7 @@ public class FfaCommand extends BaseCommand {
 			player.sendMessage(CC.color("&cThat kit does not exist."));
 			return;
 		}
-		if (plugin.getFfaManager().getByPlayer(player) != null) {
+		if (plugin.getFfaManager().getByPlayer(player) != null || plugin.getUserProfileManager().getByUuid(player.getUniqueId()).getState() == UserProfile.State.PLAYING) {
 			player.sendMessage(CC.color("&cYou are already in a FFA."));
 			return;
 		}
