@@ -7,6 +7,7 @@ import me.elb1to.ffa.map.FfaMap;
 import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.util.PlayerUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -31,6 +32,25 @@ public class FfaManager {
 		this.plugin.getKitManager().getKits().forEach((kitName, kit) -> instances.put(kit.getName(), new FfaInstance(kit, plugin)));
 	}
 
+	public void broadcast(String message) {
+		for (FfaInstance ffaInstance : instances.values()) {
+			for (UUID uuid : ffaInstance.getPlayers()) {
+				Player player = Bukkit.getPlayer(uuid);
+				player.sendMessage(message);
+			}
+		}
+	}
+
+	public void brodcastWithSound(String message, Sound sound) {
+		for (FfaInstance ffaInstance : instances.values()) {
+			for (UUID uuid : ffaInstance.getPlayers()) {
+				Player player = Bukkit.getPlayer(uuid);
+				player.sendMessage(message);
+				player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+			}
+		}
+	}
+
 	public void addPlayer(Player player, FfaInstance ffa, String mapName) {
 		player.teleport(plugin.getMapManager().getByName(mapName).getSpawn().toBukkitLocation());
 		player.setAllowFlight(false);
@@ -43,6 +63,7 @@ public class FfaManager {
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 		profile.setState(UserProfile.State.PLAYING);
 		profile.setMap(plugin.getMapManager().getByName(mapName));
+		profile.setFfa(ffa);
 
 		for (FfaInstance ffaInstance : instances.values()) {
 			if (ffaInstance.getPlayers().contains(player.getUniqueId())) {
@@ -58,6 +79,15 @@ public class FfaManager {
 	}
 
 	public void removePlayer(Player player, FfaInstance ffa) {
+		PlayerUtil.clearPlayer(player, true, plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
+		ffa.getKills().remove(player.getUniqueId());
+		ffa.getPlayers().remove(player.getUniqueId());
+
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		profile.setState(UserProfile.State.SPAWN);
+		profile.setMap(null);
+		profile.setFfa(null);
+
 		for (FfaInstance ffaInstance : instances.values()) {
 			if (ffaInstance.getPlayers().contains(player.getUniqueId())) {
 				continue;
@@ -69,16 +99,10 @@ public class FfaManager {
 				// Hide player from all other players in different FFA Instances, show player to players in spawn map type
 			}
 		}
+	}
 
-		ffa.getPlayers().remove(player.getUniqueId());
-		ffa.getKills().remove(player.getUniqueId());
-
-		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
-		profile.setState(UserProfile.State.SPAWN);
-		profile.setMap(null);
-
-		PlayerUtil.clearPlayer(player);
-		player.teleport(plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
+	public void updateKillstreak(Player player, FfaInstance ffa) {
+		ffa.getKills().put(player.getUniqueId(), ffa.getKills().get(player.getUniqueId()) + 1);
 	}
 
 	public FfaInstance getByKitName(String kitName) {

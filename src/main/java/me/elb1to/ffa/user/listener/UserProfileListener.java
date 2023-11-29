@@ -49,8 +49,7 @@ public class UserProfileListener implements Listener {
 			}
 		});
 
-		PlayerUtil.clearPlayer(player);
-		player.teleport(plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
+		PlayerUtil.clearPlayer(player, true, plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
 	}
 
 	@EventHandler
@@ -67,7 +66,6 @@ public class UserProfileListener implements Listener {
 	private void removeLoadedUser(Player player) {
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 		if (profile != null) {
-			plugin.getFfaManager().removePlayer(player, profile.getFfa());
 			plugin.getUserProfileManager().unload(player.getUniqueId());
 		}
 	}
