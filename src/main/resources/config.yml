@@ -9,23 +9,29 @@ mongo:
     auth-db: "admin"
 scoreboard:
   combat-tagged: "&f Combat: &d<seconds>s"
-  title: "&d&lNA PRACTICE"
-  lines:
-    - "&7&m------------------------"
+  title: "&d&lFFA"
+  lobby:
+    - "&7&m----------------"
+    - "&fOnline: &d<online_players>"
+    - "&fPlaying: &d<ingame_players>"
+    - ""
+    - "&delb1to.me"
+    - "&7&m----------------"
+  playing:
+    - "&7&m----------------"
     - "&fPlaying FFA:"
     - "&d<kit>"
     - ""
     - "&f Kills: &d<kills>"
     - "&f Deaths: &d<deaths>"
     - ""
-    - "&f Killstreak: <killstreak>"
+    - "&f Killstreak: &d<killstreak>"
     - "&f Players: &d<players>"
-    - "<isCombatTagged>"
     - ""
     - "&fYour Ping: &d<ping> ms"
     - ""
-    - "elb1to.me"
-    - "&7&m------------------------"
+    - "&delb1to.me"
+    - "&7&m----------------"
 messages:
   join:
     - " "
@@ -41,20 +47,17 @@ messages:
   enter_spawn: "&aYou have entered the FFA spawn."
   exit_spawn: "&cYou have exited the FFA spawn."
   cannot_fight: "&cYou cannot fight at spawn."
-
 kits:
-  default:
-    contents: "Default"
-    armor: "IRON_SWORD"
-
-maps: # config section
-  spawn: # name
-    type: lobby # type
-    spawn: 0.0, 0.0, 0.0 # spawn
-    min: -100.0, -100.0, -100.0 # min
-    max: 100.0, 100.0, 100.0 # max
-  forest:
-    type: arena
-    spawn: 0.0, 0.0, 0.0
-    min: -100.0, -100.0, -100.0
-    max: 100.0, 100.0, 100.0
+  Classic:
+    icon: DIAMOND_SWORD
+    armor: t@313;t@312;t@311;t@310;
+    items: t@276;t@261;t@322:a@2;t@364:a@64;t@262:a@8;
+  Soup:
+    icon: MUSHROOM_SOUP
+    armor: t@309:e@0@1:e@34@3;t@308:e@0@1:e@34@3;t@307:e@0@1:e@34@3;t@306:e@0@1:e@34@3;
+    items: t@267:e@16@1:e@34@3;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@373:d@8226;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@373:d@8226;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@373:d@8226;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@282;t@373:d@8226;
+  MCSG:
+    icon: FISHING_ROD
+    armor: t@309;t@304;t@307;t@314;
+    items: t@272;t@346;t@261;t@322;t@396;t@400:a@2;t@360:a@4;t@297;t@262:a@8;
+maps: { }

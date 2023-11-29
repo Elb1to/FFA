@@ -6,6 +6,7 @@ import me.elb1to.ffa.FfaPlugin;
 import me.elb1to.ffa.game.FfaInstance;
 import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.util.chat.CC;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
@@ -28,23 +29,32 @@ public class ScoreboardLayout implements AssembleAdapter {
 
 	@Override
 	public List<String> getLines(Player player) {
+		List<String> lines;
+
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 		FfaInstance instance = plugin.getFfaManager().getByPlayer(player);
-		if (instance == null) { // If the player is not in a FFA, return an empty list.
-			return null;
+		if (instance == null) {
+			lines = plugin.getConfig().getStringList("scoreboard.lobby").stream()
+					.map(line -> line
+							.replace("<max_players>", String.valueOf(Bukkit.getServer().getMaxPlayers()))
+							.replace("<online_players>", String.valueOf(Bukkit.getOnlinePlayers().size()))
+							.replace("<ingame_players>", String.valueOf(plugin.getFfaManager().getAllPlayers().size()))
+							.replace("<kills>", String.valueOf(profile.getKills()))
+							.replace("<deaths>", String.valueOf(profile.getDeaths()))
+							.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping)))
+					.collect(Collectors.toList());
+		} else {
+			lines = plugin.getConfig().getStringList("scoreboard.playing").stream()
+					.map(line -> line
+							.replace("<players>", String.valueOf(instance.getPlayers().size()))
+							.replace("<kills>", String.valueOf(profile.getKills()))
+							.replace("<deaths>", String.valueOf(profile.getDeaths()))
+							.replace("<killstreak>", String.valueOf(instance.getKills().get(player.getUniqueId())))
+							.replace("<kit>", String.valueOf(instance.getKit().getName()))
+							.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping)))
+					.collect(Collectors.toList());
 		}
 
-		UserProfile.State state = profile.getState();
-
-		return plugin.getConfig().getStringList("scoreboard.lines").stream()
-				.map(line -> CC.color(line)
-						.replace("<players>", String.valueOf(instance.getPlayers().size()))
-						.replace("<kills>", String.valueOf(profile.getKills()))
-						.replace("<deaths>", String.valueOf(profile.getDeaths()))
-						.replace("<killstreak>", String.valueOf(instance.getKills().get(player.getUniqueId())))
-						.replace("<kit>", String.valueOf(instance.getKit().getName()))
-						.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping))
-				)
-				.collect(Collectors.toList());
+		return CC.color(lines);
 	}
 }
