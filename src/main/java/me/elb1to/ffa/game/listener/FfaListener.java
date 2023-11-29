@@ -214,7 +214,7 @@ public class FfaListener implements Listener {
 
 			FfaInstance ffa = victimUser.getFfa();
 			ffa.getKit().equip(victim);
-			ffa.getKills().put(victim.getUniqueId(), 0);
+			ffa.getPlayers().put(victim.getUniqueId(), 0);
 		}, 2L);
 	}
 

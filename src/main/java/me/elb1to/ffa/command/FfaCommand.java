@@ -43,7 +43,9 @@ public class FfaCommand extends BaseCommand {
 			player.sendMessage(CC.color("&cThat kit does not exist."));
 			return;
 		}
-		if (plugin.getFfaManager().getByPlayer(player) != null || plugin.getUserProfileManager().getByUuid(player.getUniqueId()).getState() == UserProfile.State.PLAYING) {
+
+		UserProfile profile	= plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile.getFfa() != null || profile.getState() == UserProfile.State.PLAYING) {
 			player.sendMessage(CC.color("&cYou are already in a FFA."));
 			return;
 		}
@@ -59,7 +61,8 @@ public class FfaCommand extends BaseCommand {
 
 	@Subcommand("leave")
 	public void leave(Player player) {
-		FfaInstance instance = plugin.getFfaManager().getByPlayer(player);
+		UserProfile profile	= plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		FfaInstance instance = profile.getFfa();
 		if (instance == null) {
 			player.sendMessage(CC.color("&cYou are not in a FFA."));
 			return;

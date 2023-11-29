@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,20 +35,28 @@ public class FfaManager {
 
 	public void broadcast(String message) {
 		for (FfaInstance ffaInstance : instances.values()) {
-			for (UUID uuid : ffaInstance.getPlayers()) {
+			ffaInstance.getPlayers().forEach((uuid, integer) -> {
 				Player player = Bukkit.getPlayer(uuid);
+				if (player == null) {
+					return;
+				}
+
 				player.sendMessage(message);
-			}
+			});
 		}
 	}
 
 	public void brodcastWithSound(String message, Sound sound) {
 		for (FfaInstance ffaInstance : instances.values()) {
-			for (UUID uuid : ffaInstance.getPlayers()) {
+			ffaInstance.getPlayers().forEach((uuid, integer) -> {
 				Player player = Bukkit.getPlayer(uuid);
+				if (player == null) {
+					return;
+				}
+
 				player.sendMessage(message);
 				player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
-			}
+			});
 		}
 	}
 
@@ -56,8 +65,7 @@ public class FfaManager {
 		player.setAllowFlight(false);
 		player.setFlying(false);
 
-		ffa.getPlayers().add(player.getUniqueId());
-		ffa.getKills().put(player.getUniqueId(), 0);
+		ffa.getPlayers().put(player.getUniqueId(), 0);
 		ffa.getKit().equip(player);
 
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
@@ -66,21 +74,22 @@ public class FfaManager {
 		profile.setFfa(ffa);
 
 		for (FfaInstance ffaInstance : instances.values()) {
-			if (ffaInstance.getPlayers().contains(player.getUniqueId())) {
+			if (ffaInstance.getPlayers().containsKey(player.getUniqueId())) {
 				continue;
 			}
 
-			for (UUID uuid : ffaInstance.getPlayers()) {
+			// Hide player from all other players in different FFA Instances, show player to player in same FFA Instance
+			ffaInstance.getPlayers().forEach((uuid, integer) -> {
 				Player ffaPlayer = Bukkit.getPlayer(uuid);
-
-				// Hide player from all other players in different FFA Instances, show player to player in same FFA Instance
-			}
+				if (ffaPlayer == null) {
+					return;
+				}
+			});
 		}
 	}
 
 	public void removePlayer(Player player, FfaInstance ffa) {
 		PlayerUtil.clearPlayer(player, true, plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
-		ffa.getKills().remove(player.getUniqueId());
 		ffa.getPlayers().remove(player.getUniqueId());
 
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
@@ -89,20 +98,22 @@ public class FfaManager {
 		profile.setFfa(null);
 
 		for (FfaInstance ffaInstance : instances.values()) {
-			if (ffaInstance.getPlayers().contains(player.getUniqueId())) {
+			if (ffaInstance.getPlayers().containsKey(player.getUniqueId())) {
 				continue;
 			}
 
-			for (UUID uuid : ffaInstance.getPlayers()) {
+			// Hide player from all other players in different FFA Instances, show player to players in spawn map type
+			ffaInstance.getPlayers().forEach((uuid, integer) -> {
 				Player ffaPlayer = Bukkit.getPlayer(uuid);
-
-				// Hide player from all other players in different FFA Instances, show player to players in spawn map type
-			}
+				if (ffaPlayer == null) {
+					return;
+				}
+			});
 		}
 	}
 
 	public void updateKillstreak(Player player, FfaInstance ffa) {
-		ffa.getKills().put(player.getUniqueId(), ffa.getKills().get(player.getUniqueId()) + 1);
+		ffa.getPlayers().put(player.getUniqueId(), ffa.getPlayers().get(player.getUniqueId()) + 1);
 	}
 
 	public FfaInstance getByKitName(String kitName) {
@@ -110,10 +121,19 @@ public class FfaManager {
 	}
 
 	public FfaInstance getByPlayer(Player player) {
-		return instances.values().stream().filter(ffaInstance -> ffaInstance.getPlayers().contains(player.getUniqueId())).findFirst().orElse(null);
+		return instances.values().stream().filter(ffaInstance -> ffaInstance.getPlayers().containsKey(player.getUniqueId())).findFirst().orElse(null);
 	}
 
-	public List<UUID> getAllPlayers() {
-		return instances.entrySet().stream().flatMap(entry -> entry.getValue().getPlayers().stream()).collect(Collectors.toList());
+	public List<Player> getAllPlayers() {
+		List<Player> list = new ArrayList<>();
+		for (FfaInstance ffaInstance : instances.values()) {
+			Map<UUID, Integer> uuidIntegerMap = ffaInstance.getPlayers();
+			for (UUID uuid : uuidIntegerMap.keySet()) {
+				Player player = Bukkit.getPlayer(uuid);
+				list.add(player);
+			}
+		}
+
+		return list;
 	}
 }
