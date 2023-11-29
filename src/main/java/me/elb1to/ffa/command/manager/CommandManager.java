@@ -6,7 +6,10 @@ import me.elb1to.ffa.command.FfaCommand;
 import me.elb1to.ffa.kit.Kit;
 import me.elb1to.ffa.kit.command.KitCommand;
 import me.elb1to.ffa.map.FfaMap;
+import me.elb1to.ffa.map.command.BuildModeCommand;
 import me.elb1to.ffa.map.command.MapCommand;
+import me.elb1to.ffa.user.command.SettingsCommand;
+import me.elb1to.ffa.user.command.StatsCommand;
 import me.elb1to.ffa.user.command.UserProfileDebugCommand;
 
 import java.util.ArrayList;
@@ -47,6 +50,9 @@ public class CommandManager {
 		manager.registerCommand(new FfaCommand());
 		manager.registerCommand(new KitCommand());
 		manager.registerCommand(new MapCommand());
+		//manager.registerCommand(new StatsCommand()); // Unfinished command
+		//manager.registerCommand(new SettingsCommand()); // Not working currently
+		manager.registerCommand(new BuildModeCommand());
 		manager.registerCommand(new UserProfileDebugCommand());
 	}
 }
