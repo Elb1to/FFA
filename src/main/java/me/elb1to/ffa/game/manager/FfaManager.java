@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author Elb1to
@@ -73,17 +72,34 @@ public class FfaManager {
 		profile.setMap(plugin.getMapManager().getByName(mapName));
 		profile.setFfa(ffa);
 
+		// 1
 		for (FfaInstance ffaInstance : instances.values()) {
-			if (ffaInstance.getPlayers().containsKey(player.getUniqueId())) {
-				continue;
-			}
-
-			// Hide player from all other players in different FFA Instances, show player to player in same FFA Instance
 			ffaInstance.getPlayers().forEach((uuid, integer) -> {
-				Player ffaPlayer = Bukkit.getPlayer(uuid);
-				if (ffaPlayer == null) {
-					return;
-				}
+
+				//Player ffaPlayer = Bukkit.getPlayer(uuid);
+
+				// issue here
+				// description: if a player is already in an ffa instance, when someone joins a different ffa instance, only the player who joined after won't see the other player
+				// while the player who joined before, will see the player who joined after
+				// This is due to the ffa instance not having that player in the values
+				Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
+					if (ffaInstance.getPlayers().containsKey(onlinePlayer.getUniqueId())) {
+						if (ffaInstance.equals(ffa)) {
+							player.showPlayer(onlinePlayer);
+						} else {
+							player.hidePlayer(onlinePlayer);
+						}
+					}
+				});
+
+
+				/*if (ffaPlayer != null) {
+					if (!ffaInstance.equals(ffa)) {
+						player.hidePlayer(ffaPlayer);
+					} else {
+						player.showPlayer(ffaPlayer);
+					}
+				}*/
 			});
 		}
 	}
@@ -98,15 +114,14 @@ public class FfaManager {
 		profile.setFfa(null);
 
 		for (FfaInstance ffaInstance : instances.values()) {
-			if (ffaInstance.getPlayers().containsKey(player.getUniqueId())) {
-				continue;
-			}
-
-			// Hide player from all other players in different FFA Instances, show player to players in spawn map type
 			ffaInstance.getPlayers().forEach((uuid, integer) -> {
 				Player ffaPlayer = Bukkit.getPlayer(uuid);
-				if (ffaPlayer == null) {
-					return;
+				if (ffaPlayer != null) {
+					if (ffaInstance.equals(ffa)) {
+						player.hidePlayer(ffaPlayer);
+					} else {
+						player.showPlayer(ffaPlayer);
+					}
 				}
 			});
 		}
