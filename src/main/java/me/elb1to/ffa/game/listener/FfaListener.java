@@ -8,6 +8,7 @@ import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.user.ui.ffa.MapSelectionMenu;
 import me.elb1to.ffa.util.PlayerUtil;
 import me.elb1to.ffa.util.chat.CC;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
@@ -36,21 +37,21 @@ public class FfaListener implements Listener {
 
 	@EventHandler
 	public void onItemDrop(PlayerDropItemEvent event) {
-		if (shouldCancelEvent(event.getPlayer())) {
+		if (!shouldCancelEvent(event.getPlayer())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	public void onItemPickup(PlayerPickupItemEvent event) {
-		if (shouldCancelEvent(event.getPlayer())) {
+		if (!shouldCancelEvent(event.getPlayer())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event) {
-		if (shouldCancelEvent((Player) event.getWhoClicked())) {
+		if (!shouldCancelEvent((Player) event.getWhoClicked())) {
 			event.setCancelled(true);
 		}
 	}
