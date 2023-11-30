@@ -2,3 +2,4 @@ name: FFA
 author: Elb1to
 version: ${project.version}
 main: me.elb1to.ffa.FfaPlugin
+load: POSTWORLD
