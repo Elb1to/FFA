@@ -31,30 +31,39 @@ public class ScoreboardLayout implements AssembleAdapter {
 	@Override
 	public List<String> getLines(Player player) {
 		List<String> lines = new ArrayList<>();
-
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
+		if (profile == null) {
+			return lines;
+		}
+
 		switch (profile.getState()) {
 			case SPAWN:
-				lines = plugin.getConfig().getStringList("scoreboard.lobby").stream()
-						.map(line -> line
-								.replace("<max_players>", String.valueOf(Bukkit.getServer().getMaxPlayers()))
-								.replace("<online_players>", String.valueOf(Bukkit.getOnlinePlayers().size()))
-								.replace("<ingame_players>", String.valueOf(plugin.getFfaManager().getAllPlayers().size()))
-								.replace("<kills>", String.valueOf(profile.getKills()))
-								.replace("<deaths>", String.valueOf(profile.getDeaths()))
-								.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping)))
-						.collect(Collectors.toList());
+				for (String line : plugin.getConfig().getStringList("scoreboard.lobby")) {
+					String replace1 = line
+							.replace("<max_players>", String.valueOf(Bukkit.getServer().getMaxPlayers()))
+							.replace("<online_players>", String.valueOf(Bukkit.getOnlinePlayers().size()))
+							.replace("<ingame_players>", String.valueOf(plugin.getFfaManager().getAllPlayers().size()))
+							.replace("<kills>", String.valueOf(profile.getTotalKills()))
+							.replace("<deaths>", String.valueOf(profile.getTotalDeaths()))
+							.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping));
+					lines.add(replace1);
+				}
 				break;
 			case PLAYING:
-				lines = plugin.getConfig().getStringList("scoreboard.playing").stream()
-						.map(line -> line
-								.replace("<players>", String.valueOf(profile.getFfa().getPlayers().size()))
-								.replace("<kills>", String.valueOf(profile.getKills()))
-								.replace("<deaths>", String.valueOf(profile.getDeaths()))
-								.replace("<killstreak>", String.valueOf(profile.getFfa().getPlayers().get(player.getUniqueId())))
-								.replace("<kit>", String.valueOf(profile.getFfa().getKit().getName()))
-								.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping)))
-						.collect(Collectors.toList());
+				FfaInstance ffaInstance = profile.getFfa();
+				int kills = profile.getKills(ffaInstance.getKit().getName());
+				int deaths = profile.getDeaths(ffaInstance.getKit().getName());
+
+				for (String line : plugin.getConfig().getStringList("scoreboard.playing")) {
+					String replace = line
+							.replace("<players>", String.valueOf(profile.getFfa().getPlayers().size()))
+							.replace("<kills>", String.valueOf(kills))
+							.replace("<deaths>", String.valueOf(deaths))
+							.replace("<killstreak>", String.valueOf(profile.getFfa().getPlayers().get(player.getUniqueId())))
+							.replace("<kit>", String.valueOf(profile.getFfa().getKit().getName()))
+							.replace("<ping>", String.valueOf(((CraftPlayer) player).getHandle().ping));
+					lines.add(replace);
+				}
 				break;
 		}
 
