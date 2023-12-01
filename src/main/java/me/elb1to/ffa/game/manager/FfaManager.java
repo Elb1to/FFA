@@ -105,26 +105,28 @@ public class FfaManager {
 	}
 
 	public void removePlayer(Player player, FfaInstance ffa) {
-		PlayerUtil.clearPlayer(player, true, plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
-		ffa.getPlayers().remove(player.getUniqueId());
+		if (ffa != null) {
+			for (FfaInstance ffaInstance : instances.values()) {
+				ffaInstance.getPlayers().forEach((uuid, integer) -> {
+					Player ffaPlayer = Bukkit.getPlayer(uuid);
+					if (ffaPlayer != null) {
+						if (ffaInstance.equals(ffa)) {
+							player.hidePlayer(ffaPlayer);
+						} else {
+							player.showPlayer(ffaPlayer);
+						}
+					}
+				});
+			}
 
+			ffa.getPlayers().remove(player.getUniqueId());
+		}
+
+		PlayerUtil.clearPlayer(player, true, plugin.getMapManager().getByType(FfaMap.Type.LOBBY).getSpawn().toBukkitLocation());
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 		profile.setState(UserProfile.State.SPAWN);
 		profile.setMap(null);
 		profile.setFfa(null);
-
-		for (FfaInstance ffaInstance : instances.values()) {
-			ffaInstance.getPlayers().forEach((uuid, integer) -> {
-				Player ffaPlayer = Bukkit.getPlayer(uuid);
-				if (ffaPlayer != null) {
-					if (ffaInstance.equals(ffa)) {
-						player.hidePlayer(ffaPlayer);
-					} else {
-						player.showPlayer(ffaPlayer);
-					}
-				}
-			});
-		}
 	}
 
 	public void updateKillstreak(Player player, FfaInstance ffa) {
