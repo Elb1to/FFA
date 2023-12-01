@@ -33,7 +33,7 @@ public class KitManager {
 	private void load() {
 		if (cfg != null) {
 			cfg.getKeys(false).forEach(kitName -> {
-				Material icon = Material.valueOf(cfg.getString(kitName + ".icon"));
+				ItemStack icon = InventoryUtil.deserializeItemStack(cfg.getString(kitName + ".icon"));
 				ItemStack[] armor = InventoryUtil.deserializeInventory(cfg.getString(kitName + ".armor"));
 				ItemStack[] inventory = InventoryUtil.deserializeInventory(cfg.getString(kitName + ".items"));
 
@@ -52,7 +52,7 @@ public class KitManager {
 		cfg.set("kits", null);
 
 		kits.forEach((name, kit) -> {
-			cfg.set(name + ".icon", kit.getIcon().toString());
+			cfg.set(name + ".icon", InventoryUtil.serializeItemStack(kit.getIcon()));
 			cfg.set(name + ".armor", InventoryUtil.serializeInventory(kit.getArmor()));
 			cfg.set(name + ".items", InventoryUtil.serializeInventory(kit.getContents()));
 		});

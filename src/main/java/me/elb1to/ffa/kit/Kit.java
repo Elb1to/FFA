@@ -19,7 +19,7 @@ public class Kit {
 
 	private final String name;
 
-	private Material icon;
+	private ItemStack icon;
 	private ItemStack[] armor;
 	private ItemStack[] contents;
 

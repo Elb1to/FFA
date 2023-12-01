@@ -78,7 +78,7 @@ public class KitCommand extends BaseCommand {
 			return;
 		}
 
-		kit.setIcon(player.getItemInHand().getType());
+		kit.setIcon(player.getItemInHand());
 		player.sendMessage(CC.color("&aYou have updated the icon of the &b" + kit.getName() + " &akit."));
 	}
 
