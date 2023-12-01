@@ -5,11 +5,14 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import me.elb1to.ffa.FfaPlugin;
+import me.elb1to.ffa.user.UserProfile;
 import org.bson.Document;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,11 +21,15 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MongoSrv {
 
+	private final FfaPlugin plugin;
+
 	private MongoClient mongoClient;
 	private MongoDatabase mongoDatabase;
 	private MongoCollection<Document> userProfiles;
 
 	public MongoSrv(FfaPlugin plugin, ConfigurationSection cfg) {
+		this.plugin = plugin;
+
 		CompletableFuture.runAsync(() -> {
 			try {
 				plugin.getLogger().info("Connecting to MongoDB...");
@@ -55,5 +62,24 @@ public class MongoSrv {
 
 	public MongoCollection<Document> getUserProfiles() {
 		return userProfiles;
+	}
+
+	public CompletableFuture<UserProfile> getProfile(String name) {
+		return CompletableFuture.supplyAsync(() -> {
+			Document document = userProfiles.find(Filters.eq("name", name)).first();
+			if (document == null) {
+				return null;
+			}
+
+			UserProfile user = plugin.getUserProfileManager().getByUuid(UUID.fromString(document.getString("uniqueId")));
+			if (user.isLoaded()) {
+				return user;
+			}
+
+			user = new UserProfile(UUID.fromString(document.getString("uniqueId")));
+			plugin.getUserProfileManager().load(user);
+
+			return user;
+		});
 	}
 }

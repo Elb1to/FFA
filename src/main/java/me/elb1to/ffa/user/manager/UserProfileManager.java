@@ -1,14 +1,21 @@
 package me.elb1to.ffa.user.manager;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.Sorts;
 import lombok.RequiredArgsConstructor;
 import me.elb1to.ffa.FfaPlugin;
 import me.elb1to.ffa.user.UserProfile;
 import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -31,8 +38,21 @@ public class UserProfileManager {
 			Document document = plugin.getMongoSrv().getUserProfiles().find(Filters.eq("uniqueId", user.getUniqueId().toString())).first();
 			if (document != null) {
 				user.setName(document.getString("name"));
-				user.setKills(document.getInteger("kills"));
-				user.setDeaths(document.getInteger("deaths"));
+
+				Document statsDocument = (Document) document.get("stats");
+				for (String key : statsDocument.keySet()) {
+					Document kitDocument = (Document) statsDocument.get(key);
+					if (kitDocument == null) {
+						continue;
+					}
+
+					if (kitDocument.containsKey("kills")) {
+						user.getKills().put(key, kitDocument.getInteger("kills"));
+					}
+					if (kitDocument.containsKey("deaths")) {
+						user.getDeaths().put(key, kitDocument.getInteger("deaths"));
+					}
+				}
 
 				Document settingsDocument = (Document) document.get("settings");
 				user.getSettings().setModernTablist(settingsDocument.getBoolean("modernTablist"));
@@ -50,8 +70,31 @@ public class UserProfileManager {
 			Document document = new Document();
 			document.put("uniqueId", user.getUniqueId().toString());
 			document.put("name", user.getName());
-			document.put("kills", user.getKills());
-			document.put("deaths", user.getDeaths());
+
+			Document statsDocument = new Document();
+			user.getKills().forEach((kitName, amount) -> {
+				Document kitDocument;
+				if (statsDocument.containsKey(kitName)) {
+					kitDocument = (Document) statsDocument.get(kitName);
+				} else {
+					kitDocument = new Document();
+				}
+
+				kitDocument.put("kills", amount);
+				statsDocument.put(kitName, kitDocument);
+			});
+			user.getDeaths().forEach((kitName, amount) -> {
+				Document kitDocument;
+				if (statsDocument.containsKey(kitName)) {
+					kitDocument = (Document) statsDocument.get(kitName);
+				} else {
+					kitDocument = new Document();
+				}
+
+				kitDocument.put("deaths", amount);
+				statsDocument.put(kitName, kitDocument);
+			});
+			document.put("stats", statsDocument);
 
 			Document settingsDocument = new Document();
 			settingsDocument.put("modernTablist", user.getSettings().isModernTablist());
@@ -68,6 +111,52 @@ public class UserProfileManager {
 	public void unload(UUID uniqueId) {
 		save(getByUuid(uniqueId));
 		users.remove(uniqueId);
+	}
+
+	public MongoCursor<Document> getPlayersSorted(String type) {
+		Document sort = new Document();
+		sort.put(type, -1);
+
+		return plugin.getMongoSrv().getUserProfiles().find().sort(sort).limit(10).iterator();
+	}
+
+	public List<Document> getPlayersSortedByStat(String kitName, String type) {
+		try {
+			MongoCollection<Document> collection = plugin.getMongoSrv().getUserProfiles();
+			MongoIterable<Document> documents = collection.find().sort(Sorts.descending("stats." + kitName + "." + type)).limit(10);
+			List<Document> sortedPlayers = new ArrayList<>();
+			for (Document playerDocument : documents) {
+				if (playerDocument != null) {
+					sortedPlayers.add(playerDocument);
+				}
+			}
+
+			return sortedPlayers;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return Collections.emptyList();
+	}
+
+	public int getStats(UUID uuid, String kitName, String type) {
+		try {
+			Document document = plugin.getMongoSrv().getUserProfiles().find(Filters.eq("uniqueId", uuid.toString())).first();
+			if (document != null) {
+				Document stats = document.get("stats", Document.class);
+				if (stats != null) {
+					Document kitDocument = stats.get(kitName, Document.class);
+					if (kitDocument != null) {
+						Integer kills = kitDocument.getInteger(type);
+						return kills != null ? kills : 0;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return 0;
 	}
 
 	public UserProfile getOrCreate(UUID uuid) {
