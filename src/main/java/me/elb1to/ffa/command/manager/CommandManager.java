@@ -50,7 +50,7 @@ public class CommandManager {
 		manager.registerCommand(new FfaCommand());
 		manager.registerCommand(new KitCommand());
 		manager.registerCommand(new MapCommand());
-		//manager.registerCommand(new StatsCommand()); // Unfinished command
+		manager.registerCommand(new StatsCommand()); // Unfinished command
 		//manager.registerCommand(new SettingsCommand()); // Not working currently
 		manager.registerCommand(new BuildModeCommand());
 		manager.registerCommand(new UserProfileDebugCommand());
