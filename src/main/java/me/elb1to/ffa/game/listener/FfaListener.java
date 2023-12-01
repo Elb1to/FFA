@@ -6,6 +6,7 @@ import me.elb1to.ffa.game.FfaInstance;
 import me.elb1to.ffa.map.FfaMap;
 import me.elb1to.ffa.user.UserProfile;
 import me.elb1to.ffa.user.ui.ffa.MapSelectionMenu;
+import me.elb1to.ffa.user.ui.leaderboard.LeaderboardMenu;
 import me.elb1to.ffa.util.PlayerUtil;
 import me.elb1to.ffa.util.chat.CC;
 import org.bukkit.Bukkit;
@@ -37,9 +38,12 @@ public class FfaListener implements Listener {
 
 	@EventHandler
 	public void onItemDrop(PlayerDropItemEvent event) {
-		if (!shouldCancelEvent(event.getPlayer())) {
+		Player player = event.getPlayer();
+		if (!shouldCancelEvent(player)) {
 			event.setCancelled(true);
 		}
+
+		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
 	}
 
 	@EventHandler
@@ -98,7 +102,7 @@ public class FfaListener implements Listener {
 						player.sendMessage("Coming Soon™");
 						break;
 					case EMERALD:
-						player.sendMessage("Coming Soon™");
+						new LeaderboardMenu(plugin).openMenu(player);
 						break;
 					case BOOK:
 						player.sendMessage("Coming Soon™");
@@ -194,7 +198,7 @@ public class FfaListener implements Listener {
 		if (killer != null && victim != killer) {
 			UserProfile killerUser = plugin.getUserProfileManager().getByUuid(killer.getUniqueId());
 			plugin.getFfaManager().updateKillstreak(killer, killerUser.getFfa());
-			killerUser.setKills(killerUser.getKills() + 1);
+			killerUser.increaseKills(killerUser.getFfa().getKit().getName());
 
 			plugin.getFfaManager().broadcast(CC.color(plugin.getConfig().getString("messages.played_killed")
 					.replace("<victim>", victim.getName())
@@ -211,7 +215,7 @@ public class FfaListener implements Listener {
 		plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
 			UserProfile victimUser = plugin.getUserProfileManager().getByUuid(victim.getUniqueId());
 			victim.teleport(victimUser.getMap().getSpawn().toBukkitLocation());
-			victimUser.setDeaths(victimUser.getDeaths() + 1);
+			victimUser.increaseDeaths(victimUser.getFfa().getKit().getName());
 
 			FfaInstance ffa = victimUser.getFfa();
 			ffa.getKit().equip(victim);
@@ -221,6 +225,6 @@ public class FfaListener implements Listener {
 
 	private boolean shouldCancelEvent(Player player) {
 		UserProfile profile = plugin.getUserProfileManager().getByUuid(player.getUniqueId());
-		return profile == null || profile.getState() != UserProfile.State.PLAYING || !plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId());
+		return profile == null || profile.getState() != UserProfile.State.PLAYING || plugin.getUserProfileManager().getBuilders().contains(player.getUniqueId());
 	}
 }
