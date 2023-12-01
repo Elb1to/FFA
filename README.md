@@ -7,7 +7,7 @@ This plugin is currently unfinished as I was fed up with iusemeteor's behavior a
   - This license is and will be enforced on every single plugin that is under my personal [GitHub account](https://github.com/Elb1to) and [Frozed Club's Development GitHub Organization](https://github.com/FrozedClubDevelopment).
 
 ## About 'iusemeteor'
-This kid paid me USD$100.00 to make this plugin for him, but he's been extremely rude, disrespectful, and kept harrassing me non-stop. has been harrassming me non-stop.
+This kid paid me USD$100.00 to make this plugin for him, but he's been extremely rude, disrespectful, and kept harrassing me non-stop.
 I've had enough of him and his attitude, so I decided to make this plugin public and refunded him the USD$100.00 he paid me.
 
 On a daily basis I'd get spammed thousands of messages, calls and @ mentions constantly.
