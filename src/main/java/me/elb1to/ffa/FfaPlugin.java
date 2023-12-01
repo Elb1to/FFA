@@ -38,8 +38,8 @@ public class FfaPlugin extends JavaPlugin {
 	private KitManager kitManager;
 	private FfaManager ffaManager;
 
-	private LeaderboardManager leaderboardManager;
 	private UserProfileManager userProfileManager;
+	private LeaderboardManager leaderboardManager;
 
 	private CommandManager commandManager;
 
@@ -53,9 +53,13 @@ public class FfaPlugin extends JavaPlugin {
 		kitManager = new KitManager(this, getConfig().getConfigurationSection("kits"));
 		ffaManager = new FfaManager(this);
 
-		leaderboardManager = new LeaderboardManager(this);
 		userProfileManager = new UserProfileManager(this);
+		leaderboardManager = new LeaderboardManager(this);
 		commandManager = new CommandManager(this);
+
+		getServer().getPluginManager().registerEvents(new FfaListener(this), this);
+		getServer().getPluginManager().registerEvents(new ButtonListener(this), this);
+		getServer().getPluginManager().registerEvents(new UserProfileListener(this), this);
 
 		getServer().getScheduler().runTaskLater(this, () -> {
 			for (FfaMap ffaMap : mapManager.getMaps()) {
@@ -63,11 +67,10 @@ public class FfaPlugin extends JavaPlugin {
 				Cuboid cuboid = new Cuboid(ffaMap.getMin().toBukkitLocation(), ffaMap.getMax().toBukkitLocation());
 				ffaMap.setCuboid(cuboid);
 			}
+
+			leaderboardManager.updateLeaderboards();
 		}, 100L);
 
-		getServer().getPluginManager().registerEvents(new FfaListener(this), this);
-		getServer().getPluginManager().registerEvents(new ButtonListener(this), this);
-		getServer().getPluginManager().registerEvents(new UserProfileListener(this), this);
 		getServer().getScheduler().runTaskTimerAsynchronously(this, new ItemRemovalTask(this), 1L, 1L);
 
 		Assemble assemble = new Assemble(this, new ScoreboardLayout(this));
